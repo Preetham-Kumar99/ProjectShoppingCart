@@ -1,28 +1,25 @@
-const mongoose = require('mongoose')
-
-const fs = require("fs");
-
 const multer = require('multer')
+
+const bcrypt = require('bcrypt');
 
 const { validator, aws } = require('../utils')
 
-const {userModel} = require('../models');
+const {systemConfig} = require('../configs')
 
-const {hashing} = require('../middleware')
+const {userModel} = require('../models');
 
 const registerUser = async function (req, res) {
     try {
-        const requestBody = req.body;
-
-        console.log(requestBody, req.body)
+        const requestBody = req.body.json;
 
         const files = req.files
+
         if (!validator.isValidRequestBody(requestBody)) {
             res.status(400).send({ status: false, message: 'Invalid request parameters. Please provide User details' })
             return
         };
 
-        let {fname, lname, email, phone, password, fisrtaddress, bothAddressSame } = requestBody;
+        let {fname, lname, email, phone, password, address, bothAddressSame } = JSON.parse(requestBody.trim());
 
         // Validation Starts
 
@@ -51,17 +48,15 @@ const registerUser = async function (req, res) {
             return
         };
 
-        if (!validator.isValid(fisrtaddress)){
+        if (!validator.isValid(address)){
             res.status(400).send({ status: false, message: 'address is Required' })
             return
         };
 
-        let address = JSON.parse(fisrtaddress)
-
         if (!validator.isValid(address.shipping)){
             res.status(400).send({ status: false, message: 'Shipping address is Required' })
             return
-        };     
+        };
         
         if (!validator.isValid(address.billing)){
             res.status(400).send({ status: false, message: 'Billing address is Required' })
@@ -132,6 +127,20 @@ const registerUser = async function (req, res) {
             return
         };
 
+        let isEmailAlreadyInUse = await userModel.find({email})
+
+        if(isEmailAlreadyInUse) {
+            res.status(400).send({Status: false, msg: "Email Already exists" })
+            return
+        };
+
+        let isPhoneAlreadyInUse = await userModel.find({phone})
+
+        if(isPhoneAlreadyInUse) {
+            res.status(400).send({Status: false, msg: "Phone Already exists" })
+            return
+        };        
+
         if(!validator.isValidString(password)){
             res.status(400).send({status: false, message: 'Password Should be a string'})
             return
@@ -174,9 +183,13 @@ const registerUser = async function (req, res) {
 
         // Validation Ends
 
-        let profileImage = aws.uploadFile(files[0]);
+        let profileImage = await aws.uploadFile(files[0]);
 
-        let hashed = hashing.hash(password);
+        const salt = await bcrypt.genSalt(systemConfig.salt)
+
+        const hashed = await bcrypt.hash(password, salt);
+
+        // let hashed = hashing.hash(password);
 
         const userData = {
             fname,

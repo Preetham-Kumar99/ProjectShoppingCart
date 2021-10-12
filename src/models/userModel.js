@@ -38,7 +38,6 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: 'phone is required',
-        validate: { validator: validator.PasswordLength, message: 'The password should be more than 8 letters and less tham 15 letters', isAsync: false }
     },
     address: {
         shipping: {
@@ -72,15 +71,15 @@ const userSchema = new mongoose.Schema({
     }
 }, { timestamps: true })
 
-userSchema.pre('save', async function(next){
-    try{
-        const salt = await bcrypt.genSalt(systemConfig.salt)
-        const hashedPassword = await bcrypt.hash(this.password, salt)
-        this.password = hashedPassword
-        next()
-    }catch (error){
-        next(error)
-    }
-})
+// userSchema.pre('save', async function(next){
+//     try{
+//         const salt = await bcrypt.genSalt(systemConfig.salt)
+//         const hashedPassword = await bcrypt.hash(this.password, salt)
+//         this.password = hashedPassword
+//         next()
+//     }catch (error){
+//         next(error)
+//     }
+// })
 
 module.exports = mongoose.model('User', userSchema, 'User')
