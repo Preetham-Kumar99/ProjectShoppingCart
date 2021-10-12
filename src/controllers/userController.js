@@ -14,10 +14,15 @@ const registerUser = async function (req, res) {
 
         const files = req.files
 
-        if (!validator.isValidRequestBody(requestBody)) {
+        if(!validator.isValid(requestBody)){
             res.status(400).send({ status: false, message: 'Invalid request parameters. Please provide User details' })
-            return
-        };
+            return  
+        }
+
+        // if (!validator.isValidRequestBody(requestBody)) {
+        //     res.status(400).send({ status: false, message: 'Invalid request parameters. Please provide User details' })
+        //     return
+        // };
 
         let {fname, lname, email, phone, password, address, bothAddressSame } = JSON.parse(requestBody.trim());
 
@@ -101,7 +106,7 @@ const registerUser = async function (req, res) {
         }; 
 
         if(!validator.isValid(files[0])){
-            res.status(400).send({status:false, message: 'Bookcover is required'})
+            res.status(400).send({status:false, message: 'Profile Image is required'})
             return
         }
 
@@ -127,14 +132,14 @@ const registerUser = async function (req, res) {
             return
         };
 
-        let isEmailAlreadyInUse = await userModel.find({email})
+        let isEmailAlreadyInUse = await userModel.findOne({email})
 
         if(isEmailAlreadyInUse) {
             res.status(400).send({Status: false, msg: "Email Already exists" })
             return
         };
 
-        let isPhoneAlreadyInUse = await userModel.find({phone})
+        let isPhoneAlreadyInUse = await userModel.findOne({phone})
 
         if(isPhoneAlreadyInUse) {
             res.status(400).send({Status: false, msg: "Phone Already exists" })
@@ -205,7 +210,7 @@ const registerUser = async function (req, res) {
         res.status(201).send({ status: true, message: 'User created successfully', data: newUser })   
     }catch(err){
         console.log(err)
-        res.status(500).send({Status: false, Msg: err.msg})
+        res.status(500).send({Status: false, Msg: err.message})
     }
 }
 
