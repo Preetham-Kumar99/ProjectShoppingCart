@@ -214,6 +214,62 @@ const registerUser = async function (req, res) {
     }
 }
 
+
+const loginUser = async function (req, res) {
+    try {
+        const requestBody = req.body;
+        if(!validator.isValidRequestBody(requestBody)) {
+            res.status(400).send({status: false, message: 'Invalid request parameters. Please provide login details'})
+            return
+        }
+
+        // Extract params
+        const {email, password} = requestBody;
+        
+        // Validation starts
+        if(!validator.isValid(email)) {
+            res.status(400).send({status: false, message: `Email is required`})
+            return
+        }
+        
+        if(!validator.validateEmail(email)) {
+            res.status(400).send({status: false, message: `Email should be a valid email address`})
+            return
+        }
+
+        if(!validator.isValid(password)) {
+            res.status(400).send({status: false, message: `Password is required`})
+            return
+        }
+        // Validation ends
+
+        const User = await authorModel.findOne({email, password});
+
+        if(!User) {
+            res.status(401).send({status: false, message: `Invalid login credentials`});
+            return
+        }
+
+        const validPassword = await bcrypt.compare(requestBody.password, User.password);
+
+        if (validPassword) {
+            res.status(200).json({ message: "Valid password" });
+          } else {
+            res.status(400).json({ error: "Invalid Password" });
+          }
+
+        const token = await jwt.createToken({UserId: User._id});
+
+        res.header("Authorization", "Bearer" + yourtoken);
+
+       // res.header('x-api-key', token);
+        res.status(200).send({status: true, message: `Author login successfull`, data: {token}});
+    } catch (error) {
+        res.status(500).send({status: false, message: error.message});
+    }
+}
+
+
 module.exports = {
     registerUser,
 }

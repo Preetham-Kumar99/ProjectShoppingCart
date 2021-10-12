@@ -1,3 +1,4 @@
 module.exports = {
-    hashing: require('./hash')
+    hashing: require('./hash'),
+    userAuth : require('./userAuth')
 }
