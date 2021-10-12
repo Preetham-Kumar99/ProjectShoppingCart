@@ -1,6 +1,10 @@
 const mongoose = require('mongoose')
 
+const bcrypt = require('bcrypt');
+
 const {validator} = require('../utils')
+
+const { systemConfig } = require('../configs')
 
 const userSchema = new mongoose.Schema({
     fname: {
@@ -67,5 +71,16 @@ const userSchema = new mongoose.Schema({
         }
     }
 }, { timestamps: true })
+
+userSchema.pre('save', async function(next){
+    try{
+        const salt = await bcrypt.genSalt(systemConfig.salt)
+        const hashedPassword = await bcrypt.hash(this.password, salt)
+        this.password = hashedPassword
+        next()
+    }catch (error){
+        next(error)
+    }
+})
 
 module.exports = mongoose.model('User', userSchema, 'User')

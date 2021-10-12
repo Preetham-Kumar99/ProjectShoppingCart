@@ -1,16 +1,28 @@
-const { validator } = require('../utils')
+const mongoose = require('mongoose')
+
+const fs = require("fs");
+
+const multer = require('multer')
+
+const { validator, aws } = require('../utils')
 
 const {userModel} = require('../models');
 
-const registerIntern = async function (req, res) {
+const {hashing} = require('../middleware')
+
+const registerUser = async function (req, res) {
     try {
-        const requestBody = req.body.json;
+        const requestBody = req.body;
+
+        console.log(requestBody, req.body)
+
+        const files = req.files
         if (!validator.isValidRequestBody(requestBody)) {
-            res.status(400).send({ status: false, message: 'Invalid request parameters. Please provide intern details' })
+            res.status(400).send({ status: false, message: 'Invalid request parameters. Please provide User details' })
             return
         };
 
-        let {fname, lname, email, phone, password, address, bothAddressSame } = requestBody;
+        let {fname, lname, email, phone, password, fisrtaddress, bothAddressSame } = requestBody;
 
         // Validation Starts
 
@@ -39,10 +51,12 @@ const registerIntern = async function (req, res) {
             return
         };
 
-        if (!validator.isValid(address)){
+        if (!validator.isValid(fisrtaddress)){
             res.status(400).send({ status: false, message: 'address is Required' })
             return
         };
+
+        let address = JSON.parse(fisrtaddress)
 
         if (!validator.isValid(address.shipping)){
             res.status(400).send({ status: false, message: 'Shipping address is Required' })
@@ -91,32 +105,42 @@ const registerIntern = async function (req, res) {
             return
         }; 
 
+        if(!validator.isValid(files[0])){
+            res.status(400).send({status:false, message: 'Bookcover is required'})
+            return
+        }
+
         // Parameter type Check
 
         if(!validator.isValidString(fname)){
             res.status(400).send({status: false, message: 'FullName Should be a string'})
             return
-        }
+        };
 
         if(!validator.isValidString(lname)){
             res.status(400).send({status: false, message: 'LastName Should be a string'})
             return
-        }
+        };
 
         if(!validator.validateEmail(email)){
             res.status(400).send({status: false, message: 'Email is not a Valid Email'})
             return
-        }
+        };
 
         if(!validator.validatePhone(phone)){
             res.status(400).send({status: false, message: 'Phone should be a valid phone no and should be a indian phone no'})
             return
-        }
+        };
 
         if(!validator.isValidString(password)){
             res.status(400).send({status: false, message: 'Password Should be a string'})
             return
-        }
+        };
+
+        if(!validator.PasswordLength(password)){
+            res.status(400).send({status: false, message: 'Password length should be in range of 8-15'})
+            return
+        };
 
         if (!validator.isValidString(address.shipping.street)){
             res.status(400).send({ status: false, message: 'Shipping street address Should be a string' })
@@ -146,10 +170,32 @@ const registerIntern = async function (req, res) {
         if (!validator.isValidString(address.billing.pincode)){
             res.status(400).send({ status: false, message: 'Billing pincode address Should be a string' })
             return
-        }; 
+        };
 
         // Validation Ends
-          
+
+        let profileImage = aws.uploadFile(files[0]);
+
+        let hashed = hashing.hash(password);
+
+        const userData = {
+            fname,
+            lname,
+            email,
+            phone,
+            address,
+            password: hashed,
+            profileImage
+        };
+
+        const newUser = await userModel.create(userData)
+        res.status(201).send({ status: true, message: 'User created successfully', data: newUser })   
     }catch(err){
-        res.status(500).send({Status: false, Msg: error.msg})
+        console.log(err)
+        res.status(500).send({Status: false, Msg: err.msg})
     }
+}
+
+module.exports = {
+    registerUser,
+}
