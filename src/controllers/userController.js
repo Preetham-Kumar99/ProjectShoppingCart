@@ -61,6 +61,19 @@ const registerUser = async function (req, res) {
             return
         };
 
+        if (bothAddressSame === true) {
+            if (!Object.prototype.hasOwnProperty.call(address, 'billing')) address['billing'] = address['shipping']
+
+            // if (!Object.prototype.hasOwnProperty.call(address["billing"], 'street')) address["billing"]['street'] = address.shipping.street
+            // address["billing"]['street'] = address.shipping.street
+
+            // if (!Object.prototype.hasOwnProperty.call(address["billing"], 'city')) address["billing"]['city'] = address.shipping.city
+            // address["billing"]['city'] = address.shipping.city
+
+            // if (!Object.prototype.hasOwnProperty.call(address["billing"], 'pincode')) address["billing"]['pincode'] = address.shipping.pincode
+            // address["billing"]['pincode'] = address.shipping.pincode
+        }
+
         if (!validator.isValid(address.shipping)) {
             res.status(400).send({ status: false, message: 'Shipping address is Required' })
             return
@@ -85,13 +98,6 @@ const registerUser = async function (req, res) {
         //     res.status(400).send({ status: false, message: 'Shipping pincode address is Required' })
         //     return
         // };
-
-        if (bothAddressSame == 'true') {
-            if (!Object.prototype.hasOwnProperty.call(address, billing)) address['billing'] = {}
-            if (!Object.prototype.hasOwnProperty.call(address, billing, street)) address["billing"]['street'] = address.shipping.street
-            if (!Object.prototype.hasOwnProperty.call(address, billing, city)) address["billing"]['city'] = address.shipping.city
-            if (!Object.prototype.hasOwnProperty.call(address, billing, pincode)) address["billing"]['pincode'] = address.shipping.street
-        }
 
         if (!validator.isValid(address.billing.street)) {
             res.status(400).send({ status: false, message: 'Billing street address is Required' })
