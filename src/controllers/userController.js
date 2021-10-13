@@ -303,6 +303,103 @@ const getUser = async function (req, res) {
     }
 }
 
+const updateUser = async function (req, res) {
+    try {
+        const requestBody = req.body.json
+        const userId = req.params.userId
+        const userIdFromToken = req.UserId
+        const files = req.files
+
+        // Validation stats
+        if (!validator.isValidObjectId(userId)) {
+            res.status(400).send({ status: false, message: `${userId} is not a valid user id` })
+            return
+        }
+
+        if (!validator.isValidObjectId(userIdFromToken)) {
+            res.status(400).send({ status: false, message: `${userIdFromToken} is not a valid token id` })
+            return
+        }
+
+        if (!(userId === userIdFromToken)) {
+            res.status(403).send({ status: false, message: `Not Authorised` })
+            return
+        }
+
+        if (!validator.isValidRequestBody(requestBody)) {
+            res.status(200).send({ status: true, message: 'No paramateres passed. User unmodified' })
+            return
+        }
+
+        // Extract params
+
+        let { fname, lname, email, phone, password, address } = JSON.parse(requestBody.trim());
+
+        const updatedUserData = {}
+
+        if (validator.isValid(fname)) {
+            if (!Object.prototype.hasOwnProperty.call(updatedUserData, '$set')) updatedUserData['$set'] = {}
+            updatedUserData['$set']['fname'] = fname
+        }
+
+        if (validator.isValid(lname)) {
+            if (!Object.prototype.hasOwnProperty.call(updatedUserData, '$set')) updatedUserData['$set'] = {}
+            updatedUserData['$set']['lname'] = lname
+        }
+
+        if (validator.isValid(email)) {
+            if (!Object.prototype.hasOwnProperty.call(updatedUserData, '$set')) updatedUserData['$set'] = {}
+            updatedUserData['$set']['email'] = email
+        }
+
+        const isEmailAlreadyUsed = await userModel.findOne({ email });
+
+        if (isEmailAlreadyUsed && !(isEmailAlreadyUsed.email == email)) {
+            res.status(400).send({ status: false, message: `${email} is already used` })
+            return
+        }
+
+
+
+        if (validator.isValid(password)) {
+            if (!Object.prototype.hasOwnProperty.call(updatedUserData, '$set')) updatedUserData['$set'] = {}
+            
+            const salt = await bcrypt.genSalt(systemConfig.salt)
+            const hashed = await bcrypt.hash(password, salt);
+
+            updatedUserData['$set']['password'] = hashed
+        }
+
+        if (validator.isValid(phone)) {
+            if (!Object.prototype.hasOwnProperty.call(updatedUserData, '$set')) updatedUserData['$set'] = {}
+            updatedUserData['$set']['phone'] = phone
+        }
+
+
+        const isPhoneAlreadyUsed = await userModel.findOne({ phone });
+
+        if (isPhoneAlreadyUsed && !(isPhoneAlreadyUsed.phone == phone)) {
+            res.status(400).send({ status: false, message: `${phone}  is already used` })
+            return
+        }
+
+        if (validator.isValid(files[0])) {
+            if (!Object.prototype.hasOwnProperty.call(updatedUserData, '$set')) updatedUserData['$set'] = {}
+            let profileImage = await aws.uploadFile.files[0]
+            updatedUserData['$set']['profileImage'] = profileImage
+        }
+
+        
+
+        const updatedBook = await bookModel.findOneAndUpdate({ _id: bookId }, updatedBookData, { new: true })
+
+        res.status(200).send({ status: true, message: 'Book updated successfully', data: updatedBook });
+
+    } catch (error) {
+        res.status(500).send({ status: false, message: error.message });
+    }
+}
+
 
 
 module.exports = {
