@@ -14,13 +14,13 @@ const registerUser = async function (req, res) {
 
         const files = req.files
 
-        // if (!validator.isValid(requestBody)) {
-        //     res.status(400).send({ status: false, message: 'Invalid request parameters. Please provide User details' })
-        //     return
-        // }
-        if(!requestBody){
-            res.status(401).send({status : false , msg : "request body not present" })
+        if (!validator.isValid(requestBody)) {
+            res.status(400).send({ status: false, message: 'Invalid request , Body is required' })
+            return
         }
+        // if(!requestBody){
+        //     res.status(401).send({status : false , msg : "request body not present" })
+        // }
 
         if (!validator.isValidRequestBody(JSON.parse(requestBody))) {
             res.status(400).send({ status: false, message: 'Invalid request parameters. Please provide User details' })
@@ -332,8 +332,14 @@ const updateUser = async function (req, res) {
             return
         }
 
-        if (!validator.isValidRequestBody(requestBody)) {
-            res.status(200).send({ status: true, message: 'No paramateres passed. User unmodified' })
+        // if (!validator.isValid(requestBody) || !files[0]) {
+        //     res.status(400).send({ status: false, message: 'Invalid request , User unmodified ' })
+        //     return
+        // }
+
+
+        if (!validator.isValidRequestBody(JSON.parse(requestBody)) || !files[0]) {
+            res.status(400).send({ status: true, message: 'No paramateres passed. User unmodified' })
             return
         }
 
@@ -341,14 +347,19 @@ const updateUser = async function (req, res) {
 
         let { fname, lname, email, phone, password, address } = JSON.parse(requestBody.trim());
 
-        let user = await userModel.findOne({ _id:userId })
+        let user = await userModel.findOne({ _id: userId })
 
-        if(!user){
-            res.status(404).send({Status: false, msg: "User doesn't exist"})
+        if (!user) {
+            res.status(404).send({ Status: false, msg: "User doesn't exist" })
             return
         };
 
         const updatedUserData = {}
+
+
+
+
+
 
         if (validator.isValid(fname)) {
             if (!Object.prototype.hasOwnProperty.call(updatedUserData, '$set')) updatedUserData['$set'] = {}
@@ -360,23 +371,37 @@ const updateUser = async function (req, res) {
             updatedUserData['$set']['lname'] = lname
         }
 
+
         if (validator.isValid(email)) {
+
+            if (!validator.validateEmail(email)) {
+                res.status(400).send({ status: false, message: 'Email is not a Valid Email' })
+                return
+            };
+
             if (!Object.prototype.hasOwnProperty.call(updatedUserData, '$set')) updatedUserData['$set'] = {}
             updatedUserData['$set']['email'] = email
         }
 
         const isEmailAlreadyUsed = await userModel.findOne({ email });
 
-        if (isEmailAlreadyUsed ) {
-            if(!(user.email == email)){
-            res.status(400).send({ status: false, message: `${email} is already used` })
-            return
+        if (isEmailAlreadyUsed) {
+            if (!(user.email == email)) {
+                res.status(400).send({ status: false, message: `${email} is already used` })
+                return
             }
         }
 
         if (validator.isValid(password)) {
+
+            if (!validator.PasswordLength(password)) {
+                res.status(400).send({ status: false, message: 'Password length should be in range of 8-15' })
+                return
+            };
+
+
             if (!Object.prototype.hasOwnProperty.call(updatedUserData, '$set')) updatedUserData['$set'] = {}
-            
+
             const salt = await bcrypt.genSalt(systemConfig.salt)
             const hashed = await bcrypt.hash(password, salt);
 
@@ -384,6 +409,12 @@ const updateUser = async function (req, res) {
         }
 
         if (validator.isValid(phone)) {
+
+            if (!validator.validatePhone(phone)) {
+                res.status(400).send({ status: false, message: 'Phone should be a valid phone no and should be a indian phone no' })
+                return
+            }
+
             if (!Object.prototype.hasOwnProperty.call(updatedUserData, '$set')) updatedUserData['$set'] = {}
             updatedUserData['$set']['phone'] = phone
         }
@@ -392,9 +423,9 @@ const updateUser = async function (req, res) {
         const isPhoneAlreadyUsed = await userModel.findOne({ phone });
 
         if (isPhoneAlreadyUsed) {
-            if(!(user.phone == phone)){
-            res.status(400).send({ status: false, message: `${phone}  is already used` })
-            return
+            if (!(user.phone == phone)) {
+                res.status(400).send({ status: false, message: `${phone}  is already used` })
+                return
             }
         }
 
@@ -404,21 +435,21 @@ const updateUser = async function (req, res) {
             updatedUserData['$set']['profileImage'] = profileImage
         }
 
-        if (validator.isValid(address)){
+        if (validator.isValid(address)) {
             if (!Object.prototype.hasOwnProperty.call(updatedUserData, '$set')) updatedUserData['$set'] = {}
 
             updatedUserData['$set']['address'] = {}
 
             if (Object.prototype.hasOwnProperty.call(address, 'billing')) updatedUserData['$set']['address']['billing'] = {}
-            if (Object.prototype.hasOwnProperty.call(address['billing'], 'city')) updatedUserData['$set']['address']['billing']['city']  = address.billing.city
-            if (Object.prototype.hasOwnProperty.call(address['billing'], 'street')) updatedUserData['$set']['address']['billing']['street']  = address.billing.street
-            if (Object.prototype.hasOwnProperty.call(address['billing'], 'pincode')) updatedUserData['$set']['address']['billing']['pincode']  = address.billing.pincode
+            if (Object.prototype.hasOwnProperty.call(address['billing'], 'city')) updatedUserData['$set']['address']['billing']['city'] = address.billing.city
+            if (Object.prototype.hasOwnProperty.call(address['billing'], 'street')) updatedUserData['$set']['address']['billing']['street'] = address.billing.street
+            if (Object.prototype.hasOwnProperty.call(address['billing'], 'pincode')) updatedUserData['$set']['address']['billing']['pincode'] = address.billing.pincode
 
 
             if (Object.prototype.hasOwnProperty.call(address, 'shipping')) updatedUserData['$set']['address']['shipping'] = {}
-            if (Object.prototype.hasOwnProperty.call(address['shipping'], 'city')) updatedUserData['$set']['address']['shipping']['city']  = address.shipping.city
-            if (Object.prototype.hasOwnProperty.call(address['shipping'], 'street')) updatedUserData['$set']['address']['shipping']['street']  = address.shipping.street
-            if (Object.prototype.hasOwnProperty.call(address['shipping'], 'pincode')) updatedUserData['$set']['address']['shipping']['pincode']  = address.shipping.pincode
+            if (Object.prototype.hasOwnProperty.call(address['shipping'], 'city')) updatedUserData['$set']['address']['shipping']['city'] = address.shipping.city
+            if (Object.prototype.hasOwnProperty.call(address['shipping'], 'street')) updatedUserData['$set']['address']['shipping']['street'] = address.shipping.street
+            if (Object.prototype.hasOwnProperty.call(address['shipping'], 'pincode')) updatedUserData['$set']['address']['shipping']['pincode'] = address.shipping.pincode
         }
 
 
@@ -435,7 +466,7 @@ const updateUser = async function (req, res) {
 
 module.exports = {
     registerUser,
-    loginUser, 
+    loginUser,
     getUser,
     updateUser,
 }
