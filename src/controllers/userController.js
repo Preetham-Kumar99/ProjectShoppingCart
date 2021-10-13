@@ -332,20 +332,21 @@ const updateUser = async function (req, res) {
             return
         }
 
-        // if (!validator.isValid(requestBody) || !files[0]) {
-        //     res.status(400).send({ status: false, message: 'Invalid request , User unmodified ' })
-        //     return
-        // }
+        if (!validator.isValid(requestBody) && !files[0]) {
+            res.status(400).send({ status: false, message: 'Invalid request , User unmodified ' })
+            return
+        }
 
+        let request = validator.isValid(requestBody) ? JSON.parse(requestBody) : {}
 
-        if (!validator.isValidRequestBody(JSON.parse(requestBody)) || !files[0]) {
+        if (!validator.isValidRequestBody(request) && !files[0]) {
             res.status(400).send({ status: true, message: 'No paramateres passed. User unmodified' })
             return
         }
 
         // Extract params
 
-        let { fname, lname, email, phone, password, address } = JSON.parse(requestBody.trim());
+        let { fname, lname, email, phone, password, address } = request;
 
         let user = await userModel.findOne({ _id: userId })
 
@@ -355,11 +356,6 @@ const updateUser = async function (req, res) {
         };
 
         const updatedUserData = {}
-
-
-
-
-
 
         if (validator.isValid(fname)) {
             if (!Object.prototype.hasOwnProperty.call(updatedUserData, '$set')) updatedUserData['$set'] = {}
