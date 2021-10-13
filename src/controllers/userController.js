@@ -18,6 +18,9 @@ const registerUser = async function (req, res) {
         //     res.status(400).send({ status: false, message: 'Invalid request parameters. Please provide User details' })
         //     return
         // }
+        if(!requestBody){
+            res.status(401).send({status : false , msg : "request body not present" })
+        }
 
         if (!validator.isValidRequestBody(JSON.parse(requestBody))) {
             res.status(400).send({ status: false, message: 'Invalid request parameters. Please provide User details' })
@@ -29,7 +32,7 @@ const registerUser = async function (req, res) {
         // Validation Starts
 
         if (!validator.isValid(fname)) {
-            res.status(400).send({ status: false, message: 'Full Name is Required' })
+            res.status(400).send({ status: false, message: 'First Name is Required' })
             return
         };
 
@@ -78,10 +81,10 @@ const registerUser = async function (req, res) {
             return
         };
 
-        if (!validator.isValid(address.shipping.pincode)) {
-            res.status(400).send({ status: false, message: 'Shipping pincode address is Required' })
-            return
-        };
+        // if (!validator.isValid(address.shipping.pincode)) {
+        //     res.status(400).send({ status: false, message: 'Shipping pincode address is Required' })
+        //     return
+        // };
 
         if (bothAddressSame == 'true') {
             if (!Object.prototype.hasOwnProperty.call(address, billing)) address['billing'] = {}
@@ -100,10 +103,10 @@ const registerUser = async function (req, res) {
             return
         };
 
-        if (!validator.isValid(address.billing.pincode)) {
-            res.status(400).send({ status: false, message: 'Billing pincode address is Required' })
-            return
-        };
+        // if (!validator.isValid(address.billing.pincode)) {
+        //     res.status(400).send({ status: false, message: 'Billing pincode address is Required' })
+        //     return
+        // };
 
         if (!validator.isValid(files[0])) {
             res.status(400).send({ status: false, message: 'Profile Image is required' })
@@ -166,10 +169,10 @@ const registerUser = async function (req, res) {
             return
         };
 
-        if (!validator.isValidString(address.shipping.pincode)) {
-            res.status(400).send({ status: false, message: 'Shipping pincode address Should be a string' })
-            return
-        };
+        // if (!validator.isValidString(address.shipping.pincode)) {
+        //     res.status(400).send({ status: false, message: 'Shipping pincode address Should be a string' })
+        //     return
+        // };
 
         if (!validator.isValidString(address.billing.street)) {
             res.status(400).send({ status: false, message: 'Billing street address Should be a string' })
@@ -181,10 +184,10 @@ const registerUser = async function (req, res) {
             return
         };
 
-        if (!validator.isValidString(address.billing.pincode)) {
-            res.status(400).send({ status: false, message: 'Billing pincode address Should be a string' })
-            return
-        };
+        // if (!validator.isValidString(address.billing.pincode)) {
+        //     res.status(400).send({ status: false, message: 'Billing pincode address Should be a string' })
+        //     return
+        // };
 
         // Validation Ends
 

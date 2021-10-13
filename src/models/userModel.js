@@ -50,7 +50,7 @@ const userSchema = new mongoose.Schema({
                 required: 'street is required'
             },
             pincode: {
-                type: String,
+                type: Number,
                 required: 'street is required'
             }
         },
@@ -64,7 +64,7 @@ const userSchema = new mongoose.Schema({
                 required: 'street is required'
             },
             pincode: {
-                type: String,
+                type: Number,
                 required: 'street is required'
             }
         }
