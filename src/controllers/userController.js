@@ -443,15 +443,22 @@ const updateUser = async function (req, res) {
             updatedUserData['$set']['address'] = {}
 
             if (Object.prototype.hasOwnProperty.call(address, 'billing')) updatedUserData['$set']['address']['billing'] = {}
-            if (Object.prototype.hasOwnProperty.call(address['billing'], 'city')) updatedUserData['$set']['address']['billing']['city'] = address.billing.city
-            if (Object.prototype.hasOwnProperty.call(address['billing'], 'street')) updatedUserData['$set']['address']['billing']['street'] = address.billing.street
-            if (Object.prototype.hasOwnProperty.call(address['billing'], 'pincode')) updatedUserData['$set']['address']['billing']['pincode'] = address.billing.pincode
-
+            if (Object.prototype.hasOwnProperty.call(address, 'billing')) {
+                Object.prototype.hasOwnProperty.call(address['billing'], 'city') ? updatedUserData['$set']['address']['billing']['city'] = address.billing.city : updatedUserData['$set']['address']['billing']['city'] = user['address']['billing']['city']
+                Object.prototype.hasOwnProperty.call(address['billing'], 'street') ? updatedUserData['$set']['address']['billing']['street'] = address.billing.street : updatedUserData['$set']['address']['billing']['street'] = user['address']['billing']['street']
+                Object.prototype.hasOwnProperty.call(address['billing'], 'pincode') ? updatedUserData['$set']['address']['billing']['pincode'] = address.billing.pincode : updatedUserData['$set']['address']['billing']['pincode'] = user['address']['billing']['pincode']
+            }else{
+                updatedUserData['$set']['address']['billing'] = user['address']['billing']
+            }
 
             if (Object.prototype.hasOwnProperty.call(address, 'shipping')) updatedUserData['$set']['address']['shipping'] = {}
-            if (Object.prototype.hasOwnProperty.call(address['shipping'], 'city')) updatedUserData['$set']['address']['shipping']['city'] = address.shipping.city
-            if (Object.prototype.hasOwnProperty.call(address['shipping'], 'street')) updatedUserData['$set']['address']['shipping']['street'] = address.shipping.street
-            if (Object.prototype.hasOwnProperty.call(address['shipping'], 'pincode')) updatedUserData['$set']['address']['shipping']['pincode'] = address.shipping.pincode
+            if (Object.prototype.hasOwnProperty.call(address, 'shipping')) {
+                Object.prototype.hasOwnProperty.call(address['shipping'], 'city') ? updatedUserData['$set']['address']['shipping']['city'] = address.shipping.city : updatedUserData['$set']['address']['shipping']['city'] = user['address']['shipping']['city']
+                Object.prototype.hasOwnProperty.call(address['shipping'], 'street') ? updatedUserData['$set']['address']['shipping']['street'] = address.shipping.street : updatedUserData['$set']['address']['shipping']['street'] = user['address']['shipping']['street']
+                Object.prototype.hasOwnProperty.call(address['shipping'], 'pincode') ? updatedUserData['$set']['address']['shipping']['pincode'] = address.shipping.pincode : updatedUserData['$set']['address']['shipping']['pincode'] = user['address']['shipping']['pincode']
+            }else{
+                updatedUserData['$set']['address']['shipping'] = user['address']['shipping']
+            }
         }
 
 
