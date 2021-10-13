@@ -2,20 +2,22 @@ const {jwt} = require('../utils')
 
 const userAuth = async (req, res, next) => {
     try {
-        const token = req.header('x-api-key')
-        if(!token) {
+        const reqtoken = req.header('Authorization')
+        if(!reqtoken) {
             res.status(403).send({status: false, message: `Missing authentication token in request`})
             return;
         }
 
-        const decoded = await jwt.verifyToken(token);
+        let token = reqtoken.split(' ')
+
+        const decoded = await jwt.verifyToken(token[1]);
 
         if(!decoded) {
             res.status(403).send({status: false, message: `Invalid authentication token in request`})
             return;
         }
 
-        req.authorId = decoded.authorId;
+        req.UserId = decoded.UserId;
 
         next()
     } catch (error) {

@@ -5,7 +5,7 @@ const {systemConfig} = require('../configs')
 const createToken = async ({UserId}) => {
     try {
         const token = await jwt.sign({
-            authorId,
+            UserId,
             iat: Math.floor(Date.now() / 1000),
             exp: Math.floor(Date.now() / 1000) + systemConfig.jwtExpiry
         }, systemConfig.jwtSecretKey)

@@ -1,5 +1,5 @@
 module.exports = {
     validator: require('./validator'),
-    aws: require('./aws')
-    // jwt: require('./jwt')
+    aws: require('./aws'),
+    jwt: require('./jwt')
 }
