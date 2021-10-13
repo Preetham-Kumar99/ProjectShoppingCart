@@ -254,7 +254,7 @@ const loginUser = async function (req, res) {
         const validPassword = await bcrypt.compare(requestBody.password, User.password);
 
         if (!validPassword) {
-            res.status(401).json({Status: false,  message: "Invalid password" });
+            res.status(401).json({ Status: false, message: "Invalid password" });
         }
 
         const token = await jwt.createToken({ UserId: User._id });
@@ -268,7 +268,44 @@ const loginUser = async function (req, res) {
 }
 
 
+const getUser = async function (req, res) {
+    try {
+        const userId = req.params.userId
+
+        const userIdFromToken = req.UserId
+
+        if (!validator.isValidObjectId(userId)) {
+            res.status(400).send({ status: false, message: `${userId} is not a valid user id` })
+            return
+        }
+
+        if (!validator.isValidObjectId(userIdFromToken)) {
+            res.status(400).send({ status: false, message: `${userIdFromToken} is not a valid token id` })
+            return
+        }
+
+        if (!(userId === userIdFromToken)) {
+            res.status(403).send({ status: false, message: `Not Authorised` })
+            return
+        }
+
+        const user = await userModel.findOne({ _id: userId })
+
+        if (!user) {
+            res.status(404).send({ status: false, message: "User not found" })
+
+        }
+
+        res.status(200).send({ status: true, message: "User Profile Details", data: user })
+
+    } catch (error) {
+        res.status(500).send({ status: false, message: error.message });
+    }
+}
+
+
+
 module.exports = {
     registerUser,
-    loginUser
+    loginUser, getUser,
 }
