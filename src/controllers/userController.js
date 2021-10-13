@@ -306,8 +306,11 @@ const getUser = async function (req, res) {
 const updateUser = async function (req, res) {
     try {
         const requestBody = req.body.json
+
         const userId = req.params.userId
+
         const userIdFromToken = req.UserId
+
         const files = req.files
 
         // Validation stats
@@ -335,6 +338,13 @@ const updateUser = async function (req, res) {
 
         let { fname, lname, email, phone, password, address } = JSON.parse(requestBody.trim());
 
+        let user = await userModel.findOne({ _id:userId })
+
+        if(!user){
+            res.status(404).send({Status: false, msg: "User doesn't exist"})
+            return
+        };
+
         const updatedUserData = {}
 
         if (validator.isValid(fname)) {
@@ -354,12 +364,12 @@ const updateUser = async function (req, res) {
 
         const isEmailAlreadyUsed = await userModel.findOne({ email });
 
-        if (isEmailAlreadyUsed && !(isEmailAlreadyUsed.email == email)) {
+        if (isEmailAlreadyUsed ) {
+            if(!(user.email == email)){
             res.status(400).send({ status: false, message: `${email} is already used` })
             return
+            }
         }
-
-
 
         if (validator.isValid(password)) {
             if (!Object.prototype.hasOwnProperty.call(updatedUserData, '$set')) updatedUserData['$set'] = {}
@@ -378,19 +388,35 @@ const updateUser = async function (req, res) {
 
         const isPhoneAlreadyUsed = await userModel.findOne({ phone });
 
-        if (isPhoneAlreadyUsed && !(isPhoneAlreadyUsed.phone == phone)) {
+        if (isPhoneAlreadyUsed) {
+            if(!(user.phone == phone)){
             res.status(400).send({ status: false, message: `${phone}  is already used` })
             return
+            }
         }
 
         if (validator.isValid(files[0])) {
             if (!Object.prototype.hasOwnProperty.call(updatedUserData, '$set')) updatedUserData['$set'] = {}
-            let profileImage = await aws.uploadFile.files[0]
+            let profileImage = await aws.uploadFile(files[0])
             updatedUserData['$set']['profileImage'] = profileImage
         }
 
-        
+        if (validator.isValid(address)){
+            if (!Object.prototype.hasOwnProperty.call(updatedUserData, '$set')) updatedUserData['$set'] = {}
 
+            updatedUserData['$set']['address'] = {}
+
+            if (Object.prototype.hasOwnProperty.call(address, 'billing')) updatedUserData['$set']['address']['billing'] = {}
+            if (Object.prototype.hasOwnProperty.call(address['billing'], 'city')) updatedUserData['$set']['address']['billing']['city']  = address.billing.city
+            if (Object.prototype.hasOwnProperty.call(address['billing'], 'street')) updatedUserData['$set']['address']['billing']['street']  = address.billing.street
+            if (Object.prototype.hasOwnProperty.call(address['billing'], 'pincode')) updatedUserData['$set']['address']['billing']['pincode']  = address.billing.pincode
+
+
+            if (Object.prototype.hasOwnProperty.call(address, 'shipping')) updatedUserData['$set']['address']['shipping'] = {}
+            if (Object.prototype.hasOwnProperty.call(address['shipping'], 'city')) updatedUserData['$set']['address']['shipping']['city']  = address.shipping.city
+            if (Object.prototype.hasOwnProperty.call(address['shipping'], 'street')) updatedUserData['$set']['address']['shipping']['street']  = address.shipping.street
+            if (Object.prototype.hasOwnProperty.call(address['shipping'], 'pincode')) updatedUserData['$set']['address']['shipping']['pincode']  = address.shipping.pincode
+        }
 
 
         const updatedUser = await userModel.findOneAndUpdate({ _id: userId }, updatedUserData, { new: true })
@@ -406,5 +432,7 @@ const updateUser = async function (req, res) {
 
 module.exports = {
     registerUser,
-    loginUser, getUser,
+    loginUser, 
+    getUser,
+    updateUser,
 }
