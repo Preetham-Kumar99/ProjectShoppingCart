@@ -338,14 +338,14 @@ const updateUser = async function (req, res) {
             return
         }
 
-        if (!validator.isValid(requestBody) && !files[0]) {
+        if (!validator.isValid(requestBody) && !files) {
             res.status(400).send({ status: false, message: 'Invalid request , User unmodified ' })
             return
         }
 
         let request = validator.isValid(requestBody) ? JSON.parse(requestBody) : {}
 
-        if (!validator.isValidRequestBody(request) && !files[0]) {
+        if (!validator.isValidRequestBody(request) && !files) {
             res.status(400).send({ status: true, message: 'No paramateres passed. User unmodified' })
             return
         }

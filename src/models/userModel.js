@@ -9,11 +9,13 @@ const { systemConfig } = require('../configs')
 const userSchema = new mongoose.Schema({
     fname: {
         type: String,
-        required: 'First name is required'
+        required: 'First name is required',
+        trim: true
     },
     lname: {
         type: String,
-        required: 'Last name is required'
+        required: 'Last name is required',
+        trim: true
     },
     email: {
         type: String,
@@ -32,6 +34,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: 'phone is required',
         unique: true,
+        trim: true,
         validate: { validator: validator.validatePhone, message: 'Please fill a valid email address', isAsync: false },
         match: [validator.phoneRegex, 'Please fill a valid email address']
     },
@@ -70,16 +73,5 @@ const userSchema = new mongoose.Schema({
         }
     }
 }, { timestamps: true })
-
-// userSchema.pre('save', async function(next){
-//     try{
-//         const salt = await bcrypt.genSalt(systemConfig.salt)
-//         const hashedPassword = await bcrypt.hash(this.password, salt)
-//         this.password = hashedPassword
-//         next()
-//     }catch (error){
-//         next(error)
-//     }
-// })
 
 module.exports = mongoose.model('User', userSchema, 'User')
