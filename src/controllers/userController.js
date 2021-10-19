@@ -94,10 +94,10 @@ const registerUser = async function (req, res) {
             return
         };
 
-        // if (!validator.isValid(address.shipping.pincode)) {
-        //     res.status(400).send({ status: false, message: 'Shipping pincode address is Required' })
-        //     return
-        // };
+        if (!validator.isValid(address.shipping.pincode)) {
+            res.status(400).send({ status: false, message: 'Shipping pincode address is Required' })
+            return
+        };
 
         if (!validator.isValid(address.billing.street)) {
             res.status(400).send({ status: false, message: 'Billing street address is Required' })
@@ -109,10 +109,10 @@ const registerUser = async function (req, res) {
             return
         };
 
-        // if (!validator.isValid(address.billing.pincode)) {
-        //     res.status(400).send({ status: false, message: 'Billing pincode address is Required' })
-        //     return
-        // };
+        if (!validator.isValid(address.billing.pincode)) {
+            res.status(400).send({ status: false, message: 'Billing pincode address is Required' })
+            return
+        };
 
         if (!validator.isValid(files[0])) {
             res.status(400).send({ status: false, message: 'Profile Image is required' })

@@ -1,5 +1,7 @@
 const mongoose = require('mongoose')
 
+const { systemConfig } = require('../configs');
+
 const reemail = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
 const remobile = /^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$/;
@@ -10,6 +12,14 @@ const validateEmail = function(email) {
 
 const validatePhone = function(mobile) {
     return remobile.test(mobile)
+}
+
+const isValidSize = function(size) {
+    let result = true;
+    for(let i=0; i<size.length; i++){   
+        if(systemConfig.sizeEnumArray.indexOf(size[i]) === -1) result = false
+    }
+    return result
 }
 
 const PasswordLength = function(password) {
@@ -35,6 +45,14 @@ const isValidString = function(value) {
     return Object.prototype.toString.call(value) === "[object String]"
 }
 
+const isValidNumber = function(value) {
+    return Object.prototype.toString.call(value) === "[object Number]"
+}
+
+const isValidBoolean = function(value) {
+    return Object.prototype.toString.call(value) === "[object Boolean]"
+}
+
 const isArray = function(arr) {
     return Array.isArray(arr)
 }
@@ -44,9 +62,12 @@ module.exports = {
     emailRegex: reemail,
     phoneRegex: remobile,
     isValid,
+    isValidSize,
     isValidRequestBody,
     isValidObjectId,
     isValidString,
+    isValidNumber,
+    isValidBoolean,
     isArray,
     validatePhone,
     PasswordLength
